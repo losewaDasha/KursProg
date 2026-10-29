@@ -1,40 +1,103 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <math.h>
 #include <locale.h>
 
+#define X_MIN 0.0
+#define X_MAX 8.0
+#define Q_NORM_MIN 42.0
+#define Q_NORM_MAX 58.0
+#define X_MIN_VALID -1.0
 
-double Q1(double x) {
-    if (x < 0) {
-        return 6.0 * sqrt(x + 1.0) + 5.0;
+#define A 6.0
+#define B 5.0
+#define C 2.0
+#define D 4.0
+#define E 50.0
+#define F 0.25
+#define G 8.0
+#define H 55.0
+
+double read_x(void);
+double compute_q(double x);
+int check_state(double q);
+void print_state(int state);
+double compute_mean(double* data, int size);
+double compute_std(double* data, int size);
+
+int main(void) {
+    setlocale(LC_ALL, "RUS");
+
+    printf("Добро пожаловать в систему мониторинга содержания примесей!\n");
+    printf("Программа рассчитывает показатель качества Q(X) и контролирует состояние процесса.\n\n");
+
+    double x = read_x();
+
+    if (x < X_MIN_VALID) {
+        printf("Ошибка: Значение X не может быть меньше %.1f (извлечение корня из отрицательного числа).\n", X_MIN_VALID);
+        return 1;
     }
-    else if (x >= 0.0 && x <= 8.0) {
-        return 2.0 * (x - 4.0) + 50.0;
+
+    double q = compute_q(x);
+    int state = check_state(q);
+
+    printf("\n--- Результаты ---\n");
+    printf("Значение X: %.2f %%\n", x);
+    printf("Показатель Q(X): %.2f\n", q);
+
+    print_state(state);
+
+    double test_data[1] = { q };
+    printf("\n[Статистика] Среднее (заглушка): %.2f\n", compute_mean(test_data, 1));
+    printf("[Статистика] Отклонение (заглушка): %.2f\n", compute_std(test_data, 1));
+
+    return 0;
+}
+
+double read_x(void) {
+    double x;
+    printf("Введите значение содержания примеси X (в %%): ");
+    if (scanf("%lf", &x) != 1) {
+        printf("Ошибка ввода! Введите число.\n");
+        return -999.0;
+    }
+    return x;
+}
+
+double compute_q(double x) {
+    if (x < 0.0) {
+        return A * sqrt(x + 1.0) + B;
+    }
+    else if (x >= X_MIN && x <= X_MAX) {
+        return C * (x - D) + E;
     }
     else {
-        return 0.25 * pow((x - 8.0), 2.0) + 55.0;
+        return F * pow(x - G, 2.0) + H;
     }
 }
 
-int main() {
-
-    setlocale(LC_ALL, "RUS");
- 
-    double test_x = 4.00;
-    double q1 = 50.00;
-    double q2 = Q1(test_x);
-
-    printf("===     РњРѕРЅРёС‚РѕСЂРёРЅРі СЂРµР°РєС‚РѕСЂР°     ===\n\n");
-    printf("---      РљРѕРЅС‚СЂРѕР»СЊРЅС‹Р№ РїСЂРёРјРµСЂ     ---\n");
-    printf("Р’С…РѕРґРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ X:      %.2f %%\n", test_x);
-    printf("РћР¶РёРґР°РµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ Q:    %.2f\n", q1);
-    printf("Р¤Р°РєС‚РёС‡РµСЃРєРё РїРѕР»СѓС‡РµРЅРѕ Q:   %.2f\n",q2);
-
-    if (fabs(q2 - q1) < 0.0001) {
-        printf("РЎС‚Р°С‚СѓСЃ РїСЂРѕРІРµСЂРєРё:         РўР•РЎРў РџР РћР™Р”Р•Рќ РЈРЎРџР•РЁРќРћ\n");
+int check_state(double q) {
+    if (q >= Q_NORM_MIN && q <= Q_NORM_MAX) {
+        return 0;
     }
     else {
-        printf("РЎС‚Р°С‚СѓСЃ РїСЂРѕРІРµСЂРєРё:         РћРЁРР‘РљРђ! Р—РЅР°С‡РµРЅРёСЏ РЅРµ СЃРѕРІРїР°РґР°СЋС‚.\n");
+        return 1;
     }
+}
 
-    return 0;
+void print_state(int state) {
+    if (state == 0) {
+        printf("Состояние: Норма\n");
+    }
+    else {
+        printf("Состояние: Отклонение\n");
+    }
+}
+
+double compute_mean(double* data, int size) {
+    return 0.0;
+}
+
+double compute_std(double* data, int size) {
+    return 0.0;
 }
